@@ -95,7 +95,9 @@ var DisplayGraph = function() {
     $('body').append(this._$svg);
 
     this._css =
-        '.node {text-align: center;cursor: pointer;}.node rect {stroke: #FFF;}.edgePath path {stroke: #FFF;fill: none;}table {text-align: right;}svg {position: absolute;left: 0px;top: 0px;}.osgDebugButton {position: absolute;left: 15px;top: 15px;z-index: 5;border: 0;background: #65a9d7;background: -webkit-gradient(linear, left top, left bottom, from(#3e779d), to(#65a9d7));background: -webkit-linear-gradient(top, #3e779d, #65a9d7);background: -moz-linear-gradient(top, #3e779d, #65a9d7);background: -ms-linear-gradient(top, #3e779d, #65a9d7);background: -o-linear-gradient(top, #3e779d, #65a9d7);padding: 5px 10px;-webkit-border-radius: 7px;-moz-border-radius: 7px;border-radius: 7px;-webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;-moz-box-shadow: rgba(0,0,0,1) 0 1px 0;box-shadow: rgba(0,0,0,1) 0 1px 0;text-shadow: rgba(0,0,0,.4) 0 1px 0;color: white;font-size: 15px;font-family: Helvetica, Arial, Sans-Serif;text-decoration: none;vertical-align: middle;}.osgDebugButton:hover {border-top-color: #28597a;background: #28597a;color: #ccc;}.osgDebugButton:active {border-top-color: #1b435e;background: #1b435e;}.osgDebugSimpleTooltip .osgDebugName {font-weight: bold;color: #60b1fc;margin: 0;}.osgDebugSimpleTooltip .osgDebugDescription {margin: 0;}';
+        '.node {text-align: center;cursor: pointer;}.node rect {stroke: #FFF;}.edgePath path {stroke: #FFF;fill: none;}table {text-align: right;}svg {position: absolute;left: 0px;top: 0px;}.osgDebugButton {position: absolute;left: 15px;top: 15px;z-index: 8;border: 0;background: #65a9d7;background: -webkit-gradient(linear, left top, left bottom, from(#3e779d), to(#65a9d7));background: -webkit-linear-gradient(top, #3e779d, #65a9d7);background: -moz-linear-gradient(top, #3e779d, #65a9d7);background: -ms-linear-gradient(top, #3e779d, #65a9d7);background: -o-linear-gradient(top, #3e779d, #65a9d7);padding: 5px 10px;-webkit-border-radius: 7px;-moz-border-radius: 7px;border-radius: 7px;-webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;-moz-box-shadow: rgba(0,0,0,1) 0 1px 0;box-shadow: rgba(0,0,0,1) 0 1px 0;text-shadow: rgba(0,0,0,.4) 0 1px 0;color: white;font-size: 15px;font-family: Helvetica, Arial, Sans-Serif;text-decoration: none;vertical-align: middle;}.osgDebugButton:hover {border-top-color: #28597a;background: #28597a;color: #ccc;}.osgDebugButton:active {border-top-color: #1b435e;background: #1b435e;}.osgDebugSimpleTooltip .osgDebugName {font-weight: bold;color: #60b1fc;margin: 0;}.osgDebugSimpleTooltip .osgDebugDescription {margin: 0;}';
+
+    this._onlyGenerateGraph = false;
 };
 
 DisplayGraph.instance = function() {
@@ -169,6 +171,21 @@ DisplayGraph.prototype = {
         if (this._displayNode) this._graphNode.generateNodeAndLink(diGraph);
         if (this._displayRenderer) this._graphRender.generateNodeAndLink(diGraph);
 
+        if (this._onlyGenerateGraph) {
+            const channel = new BroadcastChannel('pcviz_osg_channel');
+            channel.postMessage(diGraph);
+
+            channel.onmessage = e => {
+                var elt = this._selectables.get(e.data);
+                if (!elt) return;
+    
+                window.activeNode = elt;
+                notify.info('window.activeNode is set with the node below !');
+                notify.log(window.activeNode);
+                notify.log('\n');
+            };
+            return;
+        }
         // Add the style of the graph
         this.injectStyleElement();
         $('.osgDebugButton').show();
@@ -291,6 +308,10 @@ DisplayGraph.prototype = {
         css.type = 'text/css';
         css.innerHTML = this._css;
         document.getElementsByTagName('head')[0].appendChild(css);
+    },
+
+    setOnlyGenerateGraph: function(flag) {
+        this._onlyGenerateGraph = flag;
     }
 };
 
