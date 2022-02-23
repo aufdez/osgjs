@@ -91,7 +91,7 @@ var DisplayGraph = function() {
     this._focusedElement = 'graph';
     this._idToDomElement = new window.Map();
 
-    this._$svg = $('<svg width=100% height=100%></svg>');
+    this._$svg = $('<svg width=100% height=100% style="z-index: -1"></svg>');
     $('body').append(this._$svg);
 
     this._css =
@@ -172,10 +172,12 @@ DisplayGraph.prototype = {
         if (this._displayRenderer) this._graphRender.generateNodeAndLink(diGraph);
 
         if (this._onlyGenerateGraph) {
-            const channel = new BroadcastChannel('pcviz_osg_channel');
-            channel.postMessage(diGraph);
+            if (!this._channel)
+                this._channel = new BroadcastChannel('pcviz_osg_channel');
 
-            channel.onmessage = e => {
+            this._channel.postMessage(diGraph);
+
+            this._channel.onmessage = e => {
                 var elt = this._selectables.get(e.data);
                 if (!elt) return;
     
