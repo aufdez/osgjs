@@ -188,9 +188,10 @@ View.prototype = {
         // add a function to refresh the graph from the console
         if (options && options.debugGraph) {
             var camera = this.getCamera();
-            DisplayGraph.instance().refreshGraph = function() {
+            DisplayGraph.instance().refreshGraph = function(onlyGenerateGraph) {
                 var displayGraph = DisplayGraph.instance();
                 displayGraph.setDisplayGraphRenderer(true);
+                displayGraph.setOnlyGenerateGraph(onlyGenerateGraph);
                 displayGraph.createGraph(camera);
             };
 
