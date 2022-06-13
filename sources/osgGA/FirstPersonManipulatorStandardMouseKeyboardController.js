@@ -1,5 +1,6 @@
 import Controller from 'osgGA/Controller';
 import utils from 'osg/utils';
+import KeyboardEventsController from 'osg/keyboardEventsController';
 
 var FirstPersonManipulatorStandardMouseKeyboardController = function(manipulator) {
     Controller.call(this, manipulator);
@@ -13,6 +14,7 @@ utils.createPrototypeObject(
             this._delay = 0.15;
             this._stepFactor = 1.0; // meaning radius*stepFactor to move
             this._buttonup = true;
+            this._keyboardEventsCtrl = new KeyboardEventsController();
         },
         // called to enable/disable controller
         setEnable: function(bool) {
@@ -69,28 +71,28 @@ utils.createPrototypeObject(
 
         keydown: function(event) {
             var manipulator = this._manipulator;
-            if (event.keyCode === 32) {
+            if (this._keyboardEventsCtrl.isSpaceEvent(event.key.toLowerCase())) {
                 manipulator.computeHomePosition();
                 event.preventDefault();
-            } else if (event.keyCode === 87 || event.keyCode === 90 || event.keyCode === 38) {
+            } else if (this._keyboardEventsCtrl.isUpEvent(event.key)) {
                 // w/z/up
                 manipulator.getForwardInterpolator().setDelay(this._delay);
                 manipulator.getForwardInterpolator().setTarget(1);
                 event.preventDefault();
                 return false;
-            } else if (event.keyCode === 83 || event.keyCode === 40) {
+            } else if (this._keyboardEventsCtrl.isDownEvent(event.key)) {
                 // S/down
                 manipulator.getForwardInterpolator().setDelay(this._delay);
                 manipulator.getForwardInterpolator().setTarget(-1);
                 event.preventDefault();
                 return false;
-            } else if (event.keyCode === 68 || event.keyCode === 39) {
+            } else if (this._keyboardEventsCtrl.isRightEvent(event.key)) {
                 // D/right
                 manipulator.getSideInterpolator().setDelay(this._delay);
                 manipulator.getSideInterpolator().setTarget(1);
                 event.preventDefault();
                 return false;
-            } else if (event.keyCode === 65 || event.keyCode === 81 || event.keyCode === 37) {
+            } else if (this._keyboardEventsCtrl.isLeftEvent(event.key)) {
                 // a/q/left
                 manipulator.getSideInterpolator().setDelay(this._delay);
                 manipulator.getSideInterpolator().setTarget(-1);
@@ -103,22 +105,16 @@ utils.createPrototypeObject(
         keyup: function(event) {
             var manipulator = this._manipulator;
             if (
-                event.keyCode === 87 ||
-                event.keyCode === 90 ||
-                event.keyCode === 38 || // w/z/up
-                event.keyCode === 83 ||
-                event.keyCode === 40
+                this._keyboardEventsCtrl.isUpEvent(event.key) ||
+                this._keyboardEventsCtrl.isDownEvent(event.key)
             ) {
                 // S/down
                 manipulator.getForwardInterpolator().setDelay(this._delay);
                 manipulator.getForwardInterpolator().setTarget(0);
                 return false;
             } else if (
-                event.keyCode === 68 ||
-                event.keyCode === 39 || // D/right
-                event.keyCode === 65 ||
-                event.keyCode === 81 ||
-                event.keyCode === 37
+                this._keyboardEventsCtrl.isRightEvent(event.key) ||
+                this._keyboardEventsCtrl.isLeftEvent(event.key)
             ) {
                 // a/q/left
                 manipulator.getSideInterpolator().setDelay(this._delay);

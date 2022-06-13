@@ -2,6 +2,7 @@ import Controller from 'osgGA/Controller';
 import utils from 'osg/utils';
 import osgMath from 'osg/math';
 import OrbitManipulatorEnums from 'osgGA/orbitManipulatorEnums';
+import KeyboardEventsController from 'osg/keyboardEventsController';
 
 var OrbitManipulatorStandardMouseKeyboardController = function(manipulator) {
     Controller.call(this, manipulator);
@@ -12,13 +13,10 @@ utils.createPrototypeObject(
     OrbitManipulatorStandardMouseKeyboardController,
     utils.objectInherit(Controller.prototype, {
         init: function() {
-            this._rotateKey = 65; // a
-            this._zoomKey = 83; // s
-            this._panKey = 68; // d
-
             this._delay = 0.15;
             this._mode = undefined;
             this._buttonup = true;
+            this._keyboardEventsCtrl = new KeyboardEventsController();
         },
         // called to enable/disable controller
         setEnable: function(bool) {
@@ -127,12 +125,13 @@ utils.createPrototypeObject(
             this._buttonup = true;
         },
 
-        keydown: function(ev) {
-            if (ev.keyCode === 32) {
+        keydown: function (ev) {
+            const eventKey = ev.key.toLowerCase();
+            if (this._keyboardEventsCtrl.isSpaceEvent(eventKey)) {
                 this._manipulator.computeHomePosition();
                 ev.preventDefault();
             } else if (
-                ev.keyCode === this._panKey &&
+                this._keyboardEventsCtrl.isPanEvent(eventKey) &&
                 this.getMode() !== OrbitManipulatorEnums.PAN
             ) {
                 this.setMode(OrbitManipulatorEnums.PAN);
@@ -140,7 +139,7 @@ utils.createPrototypeObject(
                 this.pushButton();
                 ev.preventDefault();
             } else if (
-                ev.keyCode === this._zoomKey &&
+                this._keyboardEventsCtrl.isZoomEvent(eventKey) &&
                 this.getMode() !== OrbitManipulatorEnums.ZOOM
             ) {
                 this.setMode(OrbitManipulatorEnums.ZOOM);
@@ -148,7 +147,7 @@ utils.createPrototypeObject(
                 this.pushButton();
                 ev.preventDefault();
             } else if (
-                ev.keyCode === this._rotateKey &&
+                this._keyboardEventsCtrl.isRotateEvent(eventKey) &&
                 this.getMode() !== OrbitManipulatorEnums.ROTATE
             ) {
                 this.setMode(OrbitManipulatorEnums.ROTATE);
@@ -159,11 +158,11 @@ utils.createPrototypeObject(
         },
 
         keyup: function(ev) {
-            if (ev.keyCode === this._panKey) {
-                this.mouseup(ev);
-            } else if (ev.keyCode === this._rotateKey) {
-                this.mouseup(ev);
-            } else if (ev.keyCode === this._rotateKey) {
+            const eventKey = ev.key.toLowerCase();
+            if (this._keyboardEventsCtrl.isPanEvent(eventKey) ||
+                this._keyboardEventsCtrl.isZoomEvent(eventKey) ||
+                this._keyboardEventsCtrl.isRotateEvent(eventKey)
+            ) {
                 this.mouseup(ev);
             }
             this.setMode(undefined);

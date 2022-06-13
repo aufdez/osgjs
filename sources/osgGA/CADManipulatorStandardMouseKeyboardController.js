@@ -1,5 +1,6 @@
 import Controller from 'osgGA/Controller';
 import utils from 'osg/utils';
+import KeyboardEventsController from 'osg/keyboardEventsController';
 import OrbitManipulator from 'osgGA/OrbitManipulator';
 
 var CADManipulatorStandardMouseKeyboardController = function(manipulator) {
@@ -12,12 +13,9 @@ utils.createPrototypeObject(
     CADManipulatorStandardMouseKeyboardController,
     utils.objectInherit(Controller.prototype, {
         init: function() {
-            this._rotateKey = 65; // a
-            this._zoomKey = 83; // s
-            this._panKey = 68; // d
-
             this._mode = undefined;
             this._buttonup = true;
+            this._keyboardEventsCtrl = new KeyboardEventsController();
         },
         // called to enable/disable controller
         setEnable: function(bool) {
@@ -148,21 +146,22 @@ utils.createPrototypeObject(
         },
 
         keydown: function(ev) {
-            if (ev.keyCode === 32) {
+            const eventKey = ev.key.toLowerCase();
+            if (this._keyboardEventsCtrl.isSpaceEvent(eventKey)) {
                 this._manipulator.computeHomePosition();
                 ev.preventDefault();
-            } else if (ev.keyCode === this._panKey && this.getMode() !== OrbitManipulator.Pan) {
+            } else if (this._keyboardEventsCtrl.isPanEvent(eventKey) && this.getMode() !== OrbitManipulator.Pan) {
                 this.setMode(OrbitManipulator.Pan);
                 this._manipulator.getPanInterpolator().reset();
                 this.pushButton();
                 ev.preventDefault();
-            } else if (ev.keyCode === this._zoomKey && this.getMode() !== OrbitManipulator.Zoom) {
+            } else if (this._keyboardEventsCtrl.isZoomEvent(eventKey) && this.getMode() !== OrbitManipulator.Zoom) {
                 this.setMode(OrbitManipulator.Zoom);
                 this._manipulator.getZoomInterpolator().reset();
                 this.pushButton();
                 ev.preventDefault();
             } else if (
-                ev.keyCode === this._rotateKey &&
+                this._keyboardEventsCtrl.isRotateEvent(eventKey) &&
                 this.getMode() !== OrbitManipulator.Rotate
             ) {
                 this.setMode(OrbitManipulator.Rotate);
@@ -173,11 +172,11 @@ utils.createPrototypeObject(
         },
 
         keyup: function(ev) {
-            if (ev.keyCode === this._panKey) {
-                this.mouseup(ev);
-            } else if (ev.keyCode === this._rotateKey) {
-                this.mouseup(ev);
-            } else if (ev.keyCode === this._rotateKey) {
+            const eventKey = ev.key.toLowerCase();
+            if (this._keyboardEventsCtrl.isPanEvent(eventKey)||
+                this._keyboardEventsCtrl.isZoomEvent(eventKey) ||
+                this._keyboardEventsCtrl.isRotateEvent(eventKey)
+            ) {
                 this.mouseup(ev);
             }
             this.setMode(undefined);
