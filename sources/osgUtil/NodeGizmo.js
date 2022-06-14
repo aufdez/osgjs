@@ -168,7 +168,8 @@ var NodeGizmo = function(viewer) {
     this._pixelsMargin = 0.0;
     if ('ontouchstart' in window || navigator.maxTouchPoints || navigator.msMaxTouchPoints)
         this._pixelsMargin = 5.0;
-    
+
+    this._disabledRightMiddleButtons = false;
     this.init();
 };
 
@@ -983,6 +984,14 @@ utils.createPrototypeNode(
             buffer.dirty();
         },
 
+        setDisabledRightMiddleButtons: function (isDisabled) {
+            this._disabledRightMiddleButtons = isDisabled;
+        },
+
+        getDisabledRightMiddleButtons: function () {
+            return this._disabledRightMiddleButtons;
+        },
+
         pickAndSelect: function(e) {
             this.setNodeMask(0x0);
             var hit = this.computeNearestIntersection(e, this._tmask);
@@ -1007,8 +1016,9 @@ utils.createPrototypeNode(
                 this.onMouseMove();
         },
 
-        onMouseMove: function(e) {
-            if (!this._attachedNode) return;
+        onMouseMove: function (e) {
+            // second condition prevents movement when user clicks on right or middle buttons
+            if (!this._attachedNode || ( this.getDisabledRightMiddleButtons() && e.which > 1)) return;
             var hit;
             if (this._isEditing === false) {
                 if (e)
